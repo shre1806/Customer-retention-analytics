@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Retention Analytics — European Bank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F6F2E8;
+    --panel: #FFFEFB;
+    --ink: #211F1A;
+    --ink-soft: #5C5848;
+    --navy: #1F3864;
+    --rust: #B8472B;
+    --sage: #50682E;
+    --amber: #9C6B1F;
+    --line: #D9D0B8;
+    --line-soft: #E8E2D0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 100px; }
+
+  /* ===== HEADER / STATEMENT BANNER ===== */
+  .statement-head {
+    border-bottom: 3px double var(--ink);
+    padding: 56px 0 24px;
+    margin-bottom: 8px;
+  }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-family: 'Source Serif 4', serif;
+    font-weight: 700;
+    font-size: clamp(32px, 5vw, 52px);
+    line-height: 1.05;
+    margin: 0 0 12px;
+    color: var(--navy);
+    letter-spacing: -0.01em;
+  }
+  .subhead {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 560px;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ===== LEDGER STRIP ===== */
+  .ledger {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    margin-bottom: 56px;
+  }
+  .ledger-item {
+    padding: 20px 18px;
+    border-right: 1px solid var(--line);
+  }
+  .ledger-item:last-child { border-right: none; }
+  .ledger-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .ledger-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .ledger-value.flag { color: var(--rust); }
+  .ledger-value.good { color: var(--sage); }
+  .ledger-sub {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  /* ===== SECTIONS ===== */
+  section { margin-bottom: 64px; }
+  .section-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--rust);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  h2 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 0 0 6px;
+  }
+  .section-desc {
+    color: var(--ink-soft);
+    font-size: 15px;
+    max-width: 640px;
+    line-height: 1.55;
+    margin: 0 0 28px;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 22px 24px;
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 760px) {
+    .grid-2, .grid-3, .ledger { grid-template-columns: 1fr; }
+    .ledger-item { border-right: none; border-bottom: 1px solid var(--line); }
+    .ledger-item:last-child { border-bottom: none; }
+  }
+
+  .chart-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .chart-box { position: relative; height: 220px; }
+  .chart-box.tall { height: 280px; }
+
+  .insight {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink);
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .insight b { color: var(--rust); }
+  .insight b.good { color: var(--sage); }
+
+  /* ===== SEGMENT CARDS ===== */
+  .seg-card {
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--panel);
+    padding: 22px;
+    position: relative;
+  }
+  .seg-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 4px;
+  }
+  .seg-card.high::before { background: var(--rust); }
+  .seg-card.med::before { background: var(--amber); }
+  .seg-card.low::before { background: var(--sage); }
+  .seg-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .seg-rate {
+    font-family: 'Source Serif 4', serif;
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .seg-card.high .seg-rate { color: var(--rust); }
+  .seg-card.med .seg-rate { color: var(--amber); }
+  .seg-card.low .seg-rate { color: var(--sage); }
+  .seg-count { font-size: 13px; color: var(--ink-soft); margin-bottom: 16px; }
+  .seg-row {
+    display: flex; justify-content: space-between;
+    font-size: 13px; padding: 6px 0;
+    border-top: 1px solid var(--line-soft);
+  }
+  .seg-row span:first-child { color: var(--ink-soft); }
+  .seg-row span:last-child { font-family: 'IBM Plex Mono', monospace; font-weight: 500; }
+
+  /* ===== STRATEGY LIST ===== */
+  .strategy-col h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .strategy-col.high h3 { color: var(--rust); border-color: var(--rust); }
+  .strategy-col.med h3 { color: var(--amber); border-color: var(--amber); }
+  .strategy-col.low h3 { color: var(--sage); border-color: var(--sage); }
+  .strategy-item {
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .strategy-item:last-child { border-bottom: none; }
+  .strategy-item b { display: block; margin-bottom: 3px; color: var(--ink); }
+
+  /* ===== TIMELINE ===== */
+  .tline { border-left: 2px solid var(--line); margin-left: 8px; }
+  .tline-item { position: relative; padding: 0 0 26px 28px; }
+  .tline-item:last-child { padding-bottom: 0; }
+  .tline-item::before {
+    content: '';
+    position: absolute;
+    left: -7px; top: 2px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--navy);
+  }
+  .tline-month {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--navy);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .tline-text { font-size: 14px; line-height: 1.5; color: var(--ink); }
+
+  /* ===== KPI TABLE ===== */
+  table.kpi { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.kpi th {
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--ink);
+  }
+  table.kpi td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  table.kpi td.num { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+  table.kpi td.target { font-family: 'IBM Plex Mono', monospace; text-align: right; font-weight: 600; color: var(--sage); }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 28px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  footer a { color: var(--navy); text-decoration: none; border-bottom: 1px solid var(--line); }
+  footer a:hover { border-color: var(--navy); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="statement-head">
+    <div class="eyebrow">
+      <span>European Retail Bank · Account Activity Statement</span>
+      <span>10,000 Customers · FY Analysis</span>
+    </div>
+    <h1>Customer Engagement &amp;<br>Retention Analytics</h1>
+    <p class="subhead">A statement of who is leaving, why, and what to do about it — built from 10,000 customer records across France, Germany, and Spain.</p>
+  </div>
+
+  <div class="ledger">
+    <div class="ledger-item">
+      <div class="ledger-label">Customers on file</div>
+      <div class="ledger-value">10,000</div>
+      <div class="ledger-sub">across 3 markets</div>
+    </div>
+    <div class="ledger-item">
+      <div class="ledger-label">Churn rate</div>
+      <div class="ledger-value flag">20.4%</div>
+      <div class="ledger-sub">2,037 accounts closed</div>
+    </div>
+    <div class="ledger-item">
+      <div class="ledger-label">High-risk accounts</div>
+      <div class="ledger-value flag">3,031</div>
+      <div class="ledger-sub">45.4% churn within group</div>
+    </div>
+    <div class="ledger-item">
+      <div class="ledger-label">Loyal accounts</div>
+      <div class="ledger-value good">1,740</div>
+      <div class="ledger-sub">3.2% churn within group</div>
+    </div>
+  </div>
+
+  <!-- PHASE 1 -->
+  <section>
+    <div class="section-tag">Phase 01 · Exploratory analysis</div>
+    <h2>Where churn concentrates</h2>
+    <p class="section-desc">Breaking down the 20.4% churn rate by every customer attribute on file reveals it isn't random — it clusters tightly around a handful of factors.</p>
+
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div class="panel">
+        <p class="chart-title">Churn by geography</p>
+        <div class="chart-box"><canvas id="geoChart"></canvas></div>
+        <p class="insight">Germany churns at <b>32.4%</b> — roughly double France and Spain.</p>
+      </div>
+      <div class="panel">
+        <p class="chart-title">Churn by age group</p>
+        <div class="chart-box"><canvas id="ageChart"></canvas></div>
+        <p class="insight">The 50–60 band peaks at <b>56.2%</b> churn; under-40 customers are stable.</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <p class="chart-title">Churn by number of products</p>
+        <div class="chart-box"><canvas id="prodChart"></canvas></div>
+        <p class="insight">2-product holders are the most loyal at <b class="good">7.6%</b>; 3–4 product holders churn at <b>83–100%</b>.</p>
+      </div>
+      <div class="panel">
+        <p class="chart-title">Churn by activity status</p>
+        <div class="chart-box"><canvas id="activeChart"></canvas></div>
+        <p class="insight">Inactive members churn at <b>26.9%</b> vs <b class="good">14.3%</b> for active ones.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHASE 2 -->
+  <section>
+    <div class="section-tag">Phase 02 · Feature analysis</div>
+    <h2>What actually predicts it</h2>
+    <p class="section-desc">A Random Forest model ranks every attribute by how much it contributes to predicting churn.</p>
+
+    <div class="panel">
+      <p class="chart-title">Feature importance ranking</p>
+      <div class="chart-box tall"><canvas id="importanceChart"></canvas></div>
+      <p class="insight"><b>Age</b> is the strongest single predictor (24%), followed by salary, credit score, balance, and product count.</p>
+    </div>
+  </section>
+
+  <!-- PHASE 3 -->
+  <section>
+    <div class="section-tag">Phase 03 · Segmentation</div>
+    <h2>Three risk tiers</h2>
+    <p class="section-desc">A composite 0–12 risk score — built from age, products, geography, activity, gender, and balance — sorts every customer into a tier.</p>
+
+    <div class="grid-3" style="margin-bottom: 20px;">
+      <div class="seg-card high">
+        <div class="seg-name">High risk</div>
+        <div class="seg-rate">45.4%</div>
+        <div class="seg-count">3,031 customers · 30.3% of base</div>
+        <div class="seg-row"><span>Avg. age</span><span>43.4 yrs</span></div>
+        <div class="seg-row"><span>Avg. balance</span><span>€109,608</span></div>
+        <div class="seg-row"><span>Active rate</span><span>23.1%</span></div>
+        <div class="seg-row"><span>Germany</span><span>59.0%</span></div>
+      </div>
+      <div class="seg-card med">
+        <div class="seg-name">Medium risk</div>
+        <div class="seg-rate">11.6%</div>
+        <div class="seg-count">5,229 customers · 52.3% of base</div>
+        <div class="seg-row"><span>Avg. age</span><span>38.3 yrs</span></div>
+        <div class="seg-row"><span>Avg. balance</span><span>€74,497</span></div>
+        <div class="seg-row"><span>Active rate</span><span>54.6%</span></div>
+        <div class="seg-row"><span>Germany</span><span>13.8%</span></div>
+      </div>
+      <div class="seg-card low">
+        <div class="seg-name">Low risk</div>
+        <div class="seg-rate">3.2%</div>
+        <div class="seg-count">1,740 customers · 17.4% of base</div>
+        <div class="seg-row"><span>Avg. age</span><span>33.2 yrs</span></div>
+        <div class="seg-row"><span>Avg. balance</span><span>€24,765</span></div>
+        <div class="seg-row"><span>Active rate</span><span>91.8%</span></div>
+        <div class="seg-row"><span>Germany</span><span>0.0%</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <p class="chart-title">Risk score → churn rate</p>
+      <div class="chart-box tall"><canvas id="riskChart"></canvas></div>
+      <p class="insight">Churn stays flat below score 5, then climbs sharply — customers scoring 9+ are nearly certain to leave without intervention.</p>
+    </div>
+  </section>
+
+  <!-- PHASE 4 -->
+  <section>
+    <div class="section-tag">Phase 04 · Retention strategy</div>
+    <h2>The action plan</h2>
+    <p class="section-desc">Segment-specific interventions, prioritized by urgency and potential impact.</p>
+
+    <div class="grid-3">
+      <div class="strategy-col high">
+        <h3>High risk</h3>
+        <div class="strategy-item"><b>Proactive outreach</b>Call Germany + inactive + age 40–60 customers within 30 days (565 customers, 61.2% churn).</div>
+        <div class="strategy-item"><b>Product audit</b>Simplify 3–4 product bundles down to a right-fit 2-product offer.</div>
+        <div class="strategy-item"><b>Retention offers</b>Fee waivers / preferential rates for high-balance churners.</div>
+        <div class="strategy-item"><b>Germany campaign</b>Investigate local competitive pressure directly.</div>
+      </div>
+      <div class="strategy-col med">
+        <h3>Medium risk</h3>
+        <div class="strategy-item"><b>Re-engagement</b>Email/push campaigns for the 45% currently inactive.</div>
+        <div class="strategy-item"><b>Second-product nudge</b>Upsell single-product customers toward the 2-product sweet spot.</div>
+        <div class="strategy-item"><b>Financial check-ins</b>Free reviews ahead of the age-50 risk inflection point.</div>
+        <div class="strategy-item"><b>Loyalty tiers</b>Status-based incentives tied to tenure and products.</div>
+      </div>
+      <div class="strategy-col low">
+        <h3>Low risk</h3>
+        <div class="strategy-item"><b>Referral program</b>Turn this loyal, active base into an acquisition channel.</div>
+        <div class="strategy-item"><b>Premium upsell</b>Grow wallet share given lower average balances.</div>
+        <div class="strategy-item"><b>Drift monitoring</b>Auto-alert on falling activity or approaching age 40.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section>
+    <div class="section-tag">Rollout</div>
+    <h2>90-day implementation</h2>
+    <div class="panel">
+      <div class="tline">
+        <div class="tline-item">
+          <div class="tline-month">Month 1</div>
+          <div class="tline-text">Contact all high-risk customers, prioritizing Germany + inactive + age 40–60.</div>
+        </div>
+        <div class="tline-item">
+          <div class="tline-month">Month 1–2</div>
+          <div class="tline-text">Launch product audit & simplification for 3–4 product holders.</div>
+        </div>
+        <div class="tline-item">
+          <div class="tline-month">Month 2</div>
+          <div class="tline-text">Roll out re-engagement campaign to inactive medium-risk customers.</div>
+        </div>
+        <div class="tline-item">
+          <div class="tline-month">Month 2–3</div>
+          <div class="tline-text">Deploy second-product upsell flow for single-product holders.</div>
+        </div>
+        <div class="tline-item">
+          <div class="tline-month">Month 3</div>
+          <div class="tline-text">Launch referral and loyalty programs for the low-risk base.</div>
+        </div>
+        <div class="tline-item">
+          <div class="tline-month">Ongoing</div>
+          <div class="tline-text">Re-score every customer monthly; re-assign segments dynamically.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KPI -->
+  <section style="margin-bottom: 0;">
+    <div class="section-tag">Targets</div>
+    <h2>Success metrics</h2>
+    <div class="panel">
+      <table class="kpi">
+        <thead><tr><th>KPI</th><th style="text-align:right;">Current</th><th style="text-align:right;">Target</th></tr></thead>
+        <tbody>
+          <tr><td>Overall churn rate</td><td class="num">20.4%</td><td class="target">&lt; 14%</td></tr>
+          <tr><td>High-risk segment churn</td><td class="num">45.4%</td><td class="target">&lt; 30%</td></tr>
+          <tr><td>Active member rate</td><td class="num">51.5%</td><td class="target">&gt; 65%</td></tr>
+          <tr><td>Avg. products per customer</td><td class="num">1.53</td><td class="target">&gt; 1.8</td></tr>
+          <tr><td>Germany churn rate</td><td class="num">32.4%</td><td class="target">&lt; 22%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <span>Customer Retention Analytics — Executive Statement</span>
+    <span><a href="https://github.com/shre1806/Customer-retention-analytics">View source & full report on GitHub →</a></span>
+  </footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const ink = '#211F1A', inkSoft = '#5C5848', rust = '#B8472B', sage = '#50682E', amber = '#9C6B1F', line = '#E8E2D0';
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = inkSoft;
+
+const noLegend = { legend: { display: false } };
+const gridY = { grid: { color: line }, ticks: { callback: v => v + '%' } };
+const gridX = { grid: { display: false } };
+
+new Chart(document.getElementById('geoChart'), {
+  type: 'bar',
+  data: { labels: ['France', 'Germany', 'Spain'],
+    datasets: [{ data: [16.2, 32.4, 16.7], backgroundColor: [sage, rust, sage], borderRadius: 2, maxBarThickness: 60 }] },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { ...noLegend, tooltip: { callbacks: { label: c => ' ' + c.parsed.y + '% churn' } } },
+    scales: { x: gridX, y: { ...gridY, max: 40 } } }
+});
+
+new Chart(document.getElementById('ageChart'), {
+  type: 'bar',
+  data: { labels: ['<30','30-40','40-50','50-60','60+'],
+    datasets: [{ data: [7.5,12.1,34.0,56.2,24.8], backgroundColor: ['#8AA45C','#8AA45C', amber, rust, amber], borderRadius: 2 }] },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { ...noLegend, tooltip: { callbacks: { label: c => ' ' + c.parsed.y + '% churn' } } },
+    scales: { x: gridX, y: { ...gridY, max: 65 } } }
+});
+
+new Chart(document.getElementById('prodChart'), {
+  type: 'bar',
+  data: { labels: ['1 product','2 products','3 products','4 products'],
+    datasets: [{ data: [27.7,7.6,82.7,100], backgroundColor: [amber, sage, rust, rust], borderRadius: 2 }] },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { ...noLegend, tooltip: { callbacks: { label: c => ' ' + c.parsed.y + '% churn' } } },
+    scales: { x: gridX, y: { ...gridY, max: 105 } } }
+});
+
+new Chart(document.getElementById('activeChart'), {
+  type: 'bar',
+  data: { labels: ['Inactive','Active'],
+    datasets: [{ data: [26.9,14.3], backgroundColor: [rust, sage], borderRadius: 2, maxBarThickness: 70 }] },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { ...noLegend, tooltip: { callbacks: { label: c => ' ' + c.parsed.y + '% churn' } } },
+    scales: { x: gridX, y: { ...gridY, max: 35 } } }
+});
+
+new Chart(document.getElementById('importanceChart'), {
+  type: 'bar',
+  data: { labels: ['Age','Est. salary','Credit score','Balance','Num. products','Tenure','Active member','Geography','Has cr. card','Gender'],
+    datasets: [{ data: [24.0,14.8,14.5,14.0,13.1,8.1,4.0,3.7,2.0,1.8], backgroundColor: '#1F3864', borderRadius: 2 }] },
+  options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { ...noLegend, tooltip: { callbacks: { label: c => ' ' + c.parsed.x + '%' } } },
+    scales: { x: { grid: { color: line }, ticks: { callback: v => v + '%' } }, y: { grid: { display: false } } } }
+});
+
+const riskData = [
+  {x:0,y:1.4},{x:1,y:1.7},{x:2,y:4.2},{x:3,y:5.9},{x:4,y:11.2},{x:5,y:17.4},
+  {x:6,y:31.0},{x:7,y:44.9},{x:8,y:54.7},{x:9,y:77.8},{x:10,y:91.5},{x:11,y:95.5},{x:12,y:100.0}
+];
+new Chart(document.getElementById('riskChart'), {
+  type: 'line',
+  data: { labels: riskData.map(d => d.x),
+    datasets: [{ data: riskData.map(d => d.y), borderColor: rust, backgroundColor: 'rgba(184,71,43,0.08)',
+      borderWidth: 2, pointRadius: 3, pointBackgroundColor: rust, fill: true, tension: 0.3 }] },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { ...noLegend, tooltip: { callbacks: { label: c => ' ' + c.parsed.y + '% churn' } } },
+    scales: { x: { grid: { display: false }, title: { display: true, text: 'Risk score' } }, y: { ...gridY, max: 105 } } }
+});
+</script>
+</body>
+</html>
